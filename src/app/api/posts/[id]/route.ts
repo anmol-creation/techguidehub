@@ -8,6 +8,12 @@ interface Params {
 }
 
 export async function GET(request: Request, { params }: Params) {
+  // Auth check
+  const cookie = request.headers.get('cookie');
+  if (!cookie || !cookie.includes('admin-auth=true')) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const { id } = await params;
   const { data, error } = await supabaseAdmin
     .from('posts')

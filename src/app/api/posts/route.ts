@@ -6,6 +6,24 @@ export async function GET(request: Request) {
   const category = searchParams.get('category');
   const published = searchParams.get('published');
 
+  // Check if requesting drafts/all posts (requires admin auth)
+  if (published === 'false' || !published) {
+    const cookie = request.headers.get('cookie');
+    if (!cookie || !cookie.includes('admin-auth=true')) {
+       // If unauthorized, force published=true
+       // Or return 401. Let's return only published posts for public access.
+       // But wait, the public blog uses getPublishedPosts from lib/supabase which uses 'supabase' client (anon key).
+       // This API route uses 'supabaseAdmin'.
+       // If this API is for Admin Dashboard, it must be protected.
+       // If it is for public, it should use public client or filter by published=true.
+       // The Admin Dashboard calls getAllPostsAdmin via Server Component directly, not via API usually?
+       // Wait, Admin List page calls getAllPostsAdmin().
+       // Does anything call /api/posts GET?
+       // Maybe not currently used by app but good to secure.
+       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+  }
+
   let query = supabaseAdmin.from('posts').select('*').order('created_at', { ascending: false });
 
   if (category) {

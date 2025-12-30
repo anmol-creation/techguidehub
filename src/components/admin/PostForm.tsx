@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -49,9 +49,15 @@ export default function PostForm({ post }: PostFormProps) {
 
   // Auto-generate slug from title if creating new post
   const title = watch('title');
-  if (!post && title && !watch('slug')) {
-    setValue('slug', slugify(title));
-  }
+
+  useEffect(() => {
+    if (!post && title) {
+        const currentSlug = watch('slug');
+        if (!currentSlug) {
+            setValue('slug', slugify(title));
+        }
+    }
+  }, [title, post, setValue, watch]);
 
   const onSubmit = async (data: PostFormValues) => {
     setIsSubmitting(true);

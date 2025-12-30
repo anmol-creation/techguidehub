@@ -56,9 +56,8 @@ export default function Sidebar() {
             View Site
           </Link>
           <button
-            onClick={() => {
-              // Handle logout (e.g. call API to clear cookie)
-              document.cookie = 'admin-auth=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            onClick={async () => {
+              await fetch('/api/auth/logout', { method: 'POST' });
               window.location.href = '/admin/login';
             }}
             className="w-full group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-800 hover:text-white"
