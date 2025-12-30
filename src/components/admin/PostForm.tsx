@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/router';
 import RichEditor from './RichEditor';
 import ImageUploader from './ImageUploader';
 import { slugify } from '@/lib/utils';
@@ -85,7 +85,6 @@ export default function PostForm({ post }: PostFormProps) {
       }
 
       router.push('/admin/posts');
-      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {

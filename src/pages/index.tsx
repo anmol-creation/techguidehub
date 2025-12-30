@@ -1,12 +1,11 @@
-import { getPublishedPosts } from '@/lib/supabase';
+import { getPublishedPosts, Post } from '@/lib/supabase';
 import PostCard from '@/components/blog/PostCard';
 
-// Revalidate every hour
-export const revalidate = 3600;
+interface HomeProps {
+  posts: Post[];
+}
 
-export default async function HomePage() {
-  const posts = await getPublishedPosts();
-
+export default function HomePage({ posts }: HomeProps) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="text-center mb-16">
@@ -31,4 +30,12 @@ export default async function HomePage() {
       )}
     </div>
   );
+}
+
+export async function getStaticProps() {
+  const posts = await getPublishedPosts();
+  return {
+    props: { posts },
+    revalidate: 3600,
+  };
 }

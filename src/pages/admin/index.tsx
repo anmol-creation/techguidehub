@@ -1,13 +1,11 @@
-import { getAllPostsAdmin } from '@/lib/supabase';
-import { cookies } from 'next/headers';
+import { getAllPostsAdmin, Post } from '@/lib/supabase';
 import Link from 'next/link';
 
-// Revalidate always
-export const revalidate = 0;
+interface DashboardProps {
+  posts: Post[];
+}
 
-export default async function AdminDashboard() {
-  const posts = await getAllPostsAdmin();
-
+export default function AdminDashboard({ posts }: DashboardProps) {
   const totalPosts = posts.length;
   const publishedPosts = posts.filter(p => p.published).length;
   const drafts = totalPosts - publishedPosts;
@@ -70,4 +68,23 @@ export default async function AdminDashboard() {
       </div>
     </div>
   );
+}
+
+export async function getServerSideProps(context: any) {
+  const { req } = context;
+  const authCookie = req.cookies['admin-auth'];
+
+  if (!authCookie || authCookie !== 'true') {
+    return {
+      redirect: {
+        destination: '/admin/login',
+        permanent: false,
+      },
+    };
+  }
+
+  const posts = await getAllPostsAdmin();
+  return {
+    props: { posts },
+  };
 }

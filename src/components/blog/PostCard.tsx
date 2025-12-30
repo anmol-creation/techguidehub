@@ -22,18 +22,20 @@ export default function PostCard({ post }: PostCardProps) {
         <div className="flex-1">
           {post.category && (
             <p className="text-sm font-medium text-blue-600 dark:text-blue-400">
-              <Link href={`/category/${post.category}`} className="hover:underline">
-                {post.category}
+              <Link href={`/category/${post.category}`}>
+                <a className="hover:underline">{post.category}</a>
               </Link>
             </p>
           )}
-          <Link href={`/posts/${post.slug}`} className="block mt-2">
-            <p className="text-xl font-semibold text-gray-900 dark:text-white">
-              {post.title}
-            </p>
-            <p className="mt-3 text-base text-gray-500 dark:text-gray-400 line-clamp-3">
-              {post.excerpt}
-            </p>
+          <Link href={`/posts/${post.slug}`}>
+            <a className="block mt-2">
+              <p className="text-xl font-semibold text-gray-900 dark:text-white">
+                {post.title}
+              </p>
+              <p className="mt-3 text-base text-gray-500 dark:text-gray-400 line-clamp-3">
+                {post.excerpt}
+              </p>
+            </a>
           </Link>
         </div>
         <div className="mt-6 flex items-center">
@@ -42,7 +44,7 @@ export default function PostCard({ post }: PostCardProps) {
           </div>
           <div className="">
             <div className="flex space-x-1 text-sm text-gray-500 dark:text-gray-400">
-              <time dateTime={post.published_at}>{post.published_at ? formatDate(post.published_at) : 'Draft'}</time>
+              <time dateTime={post.published_at || ''}>{post.published_at ? formatDate(post.published_at) : 'Draft'}</time>
               <span aria-hidden="true">&middot;</span>
               <span>{post.reading_time} min read</span>
             </div>

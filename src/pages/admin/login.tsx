@@ -1,7 +1,5 @@
-'use client';
-
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/router';
 import { Lock, Mail } from 'lucide-react';
 
 export default function LoginPage() {
@@ -25,7 +23,6 @@ export default function LoginPage() {
 
       if (res.ok) {
         router.push('/admin');
-        router.refresh();
       } else {
         const data = await res.json();
         setError(data.error || 'Login failed');

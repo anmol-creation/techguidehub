@@ -1,12 +1,11 @@
-'use client';
-
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { useRouter } from 'next/router';
 import { LayoutDashboard, FileText, Settings, LogOut, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function Sidebar() {
-  const pathname = usePathname();
+  const router = useRouter();
+  const pathname = router.pathname;
 
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
@@ -24,36 +23,34 @@ export default function Sidebar() {
           {navigation.map((item) => {
             const isActive = pathname === item.href || (item.href !== '/admin' && pathname.startsWith(item.href));
             return (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={cn(
-                  isActive
-                    ? 'bg-gray-800 text-white'
-                    : 'text-gray-300 hover:bg-gray-800 hover:text-white',
-                  'group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors'
-                )}
-              >
-                <item.icon
+              <Link key={item.name} href={item.href}>
+                <a
                   className={cn(
-                    isActive ? 'text-white' : 'text-gray-400 group-hover:text-white',
-                    'mr-3 flex-shrink-0 h-6 w-6'
+                    isActive
+                      ? 'bg-gray-800 text-white'
+                      : 'text-gray-300 hover:bg-gray-800 hover:text-white',
+                    'group flex items-center px-2 py-2 text-sm font-medium rounded-md transition-colors'
                   )}
-                  aria-hidden="true"
-                />
-                {item.name}
+                >
+                  <item.icon
+                    className={cn(
+                      isActive ? 'text-white' : 'text-gray-400 group-hover:text-white',
+                      'mr-3 flex-shrink-0 h-6 w-6'
+                    )}
+                    aria-hidden="true"
+                  />
+                  {item.name}
+                </a>
               </Link>
             );
           })}
         </nav>
         <div className="px-2 py-4 border-t border-gray-800">
-           <Link
-            href="/"
-            target="_blank"
-            className="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-800 hover:text-white mb-1"
-          >
-            <ExternalLink className="mr-3 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-white" />
-            View Site
+           <Link href="/">
+             <a target="_blank" className="group flex items-center px-2 py-2 text-sm font-medium rounded-md text-gray-300 hover:bg-gray-800 hover:text-white mb-1">
+               <ExternalLink className="mr-3 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-white" />
+               View Site
+             </a>
           </Link>
           <button
             onClick={async () => {
