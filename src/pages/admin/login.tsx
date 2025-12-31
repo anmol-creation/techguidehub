@@ -21,14 +21,19 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
 
+      console.log('Login Response:', res.status);
+
       if (res.ok) {
+        console.log('Redirecting...');
         router.push('/admin');
       } else {
         const data = await res.json();
+        console.log('Error data:', data);
         setError(data.error || 'Login failed');
       }
     } catch (err) {
-      setError('An error occurred');
+      console.error('Login error:', err);
+      setError('An error occurred: ' + (err instanceof Error ? err.message : String(err)));
     } finally {
       setIsLoading(false);
     }
