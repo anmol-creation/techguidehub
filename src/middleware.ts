@@ -8,7 +8,7 @@ export function middleware(request: NextRequest) {
   if (path.startsWith('/admin') && path !== '/admin/login') {
     const authCookie = request.cookies.get('admin-auth');
 
-    if (!authCookie || authCookie.value !== 'true') {
+    if (!authCookie || authCookie !== 'true') {
       return NextResponse.redirect(new URL('/admin/login', request.url));
     }
   }
