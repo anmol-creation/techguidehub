@@ -9,6 +9,7 @@ import RichEditor from './RichEditor';
 import ImageUploader from './ImageUploader';
 import { slugify } from '@/lib/utils';
 import { Post } from '@/lib/supabase';
+import { Save, X } from 'lucide-react';
 
 const postSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -93,114 +94,158 @@ export default function PostForm({ post }: PostFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 max-w-4xl">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 max-w-5xl mx-auto">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-white tracking-tight">
+             {post ? 'Edit Post' : 'Create New Post'}
+          </h1>
+          <p className="text-slate-400 mt-1">Fill in the details below to {post ? 'update your' : 'publish a new'} article.</p>
+        </div>
+        <div className="flex gap-3">
+           <button
+             type="button"
+             onClick={() => router.back()}
+             className="btn-secondary flex items-center gap-2"
+           >
+             <X size={16} />
+             Cancel
+           </button>
+           <button
+             type="submit"
+             disabled={isSubmitting}
+             className="btn-primary flex items-center gap-2"
+           >
+             <Save size={16} />
+             {isSubmitting ? 'Saving...' : (post ? 'Update Post' : 'Create Post')}
+           </button>
+        </div>
+      </div>
+
       {error && (
-        <div className="bg-red-50 text-red-500 p-4 rounded-md">
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg flex items-center gap-3">
+          <div className="w-2 h-2 rounded-full bg-red-500" />
           {error}
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Title</label>
-          <input
-            {...register('title')}
-            className="w-full p-2 border rounded-md dark:bg-gray-800 dark:border-gray-700"
-            placeholder="Post Title"
-          />
-          {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
-        </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+         {/* Main Content Column */}
+         <div className="lg:col-span-2 space-y-8">
+            {/* Basic Info Card */}
+            <div className="admin-card p-6 space-y-6">
+                <h3 className="text-lg font-medium text-white border-b border-slate-800 pb-4 mb-4">Basic Information</h3>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Slug</label>
-          <input
-            {...register('slug')}
-            className="w-full p-2 border rounded-md dark:bg-gray-800 dark:border-gray-700"
-            placeholder="post-slug"
-          />
-          {errors.slug && <p className="text-red-500 text-sm">{errors.slug.message}</p>}
-        </div>
-      </div>
+                <div className="space-y-2">
+                  <label className="admin-label">Title</label>
+                  <input
+                    {...register('title')}
+                    className="admin-input text-lg font-medium"
+                    placeholder="Enter post title"
+                  />
+                  {errors.title && <p className="text-red-400 text-xs mt-1">{errors.title.message}</p>}
+                </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Excerpt</label>
-        <textarea
-          {...register('excerpt')}
-          className="w-full p-2 border rounded-md dark:bg-gray-800 dark:border-gray-700 h-24"
-          placeholder="Brief description for SEO and previews"
-        />
-      </div>
+                <div className="space-y-2">
+                  <label className="admin-label">Slug</label>
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-slate-800 bg-slate-900 text-slate-500 text-sm">
+                      /posts/
+                    </span>
+                    <input
+                      {...register('slug')}
+                      className="admin-input rounded-l-none"
+                      placeholder="post-slug"
+                    />
+                  </div>
+                  {errors.slug && <p className="text-red-400 text-xs mt-1">{errors.slug.message}</p>}
+                </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Content</label>
-        <RichEditor content={content} onChange={setContent} />
-      </div>
+                <div className="space-y-2">
+                  <label className="admin-label">Excerpt</label>
+                  <textarea
+                    {...register('excerpt')}
+                    className="admin-input min-h-[100px] resize-y"
+                    placeholder="Brief description for SEO and previews..."
+                  />
+                </div>
+            </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Category</label>
-          <input
-            {...register('category')}
-            className="w-full p-2 border rounded-md dark:bg-gray-800 dark:border-gray-700"
-            placeholder="Technology"
-          />
-        </div>
+             {/* Editor Card */}
+            <div className="admin-card overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-800 bg-slate-900/50">
+                    <h3 className="text-lg font-medium text-white">Content</h3>
+                </div>
+               <div className="p-0">
+                 <RichEditor content={content} onChange={setContent} />
+               </div>
+            </div>
+         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Tags (comma separated)</label>
-          <input
-            {...register('tags')}
-            className="w-full p-2 border rounded-md dark:bg-gray-800 dark:border-gray-700"
-            placeholder="react, nextjs, webdev"
-          />
-        </div>
-      </div>
+         {/* Sidebar Column */}
+         <div className="space-y-8">
+            {/* Publishing Card */}
+            <div className="admin-card p-6">
+               <h3 className="text-lg font-medium text-white border-b border-slate-800 pb-4 mb-4">Publishing</h3>
+               <div className="space-y-6">
+                   <div className="flex items-center justify-between p-4 rounded-lg bg-slate-900/50 border border-slate-800">
+                      <div className="flex flex-col">
+                         <span className="text-sm font-medium text-white">Status</span>
+                         <span className="text-xs text-slate-500">{watch('published') ? 'Visible to public' : 'Draft only'}</span>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" {...register('published')} className="sr-only peer" />
+                        <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                      </label>
+                   </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Cover Image</label>
-        <ImageUploader
-          defaultImage={post?.cover_image}
-          onUpload={(url) => setValue('cover_image', url)}
-        />
-        <input type="hidden" {...register('cover_image')} />
-      </div>
+                   <div className="space-y-2">
+                      <label className="admin-label">Reading Time (min)</label>
+                      <input
+                        type="number"
+                        {...register('reading_time', { valueAsNumber: true })}
+                        className="admin-input"
+                      />
+                   </div>
+               </div>
+            </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Reading Time (minutes)</label>
-          <input
-            type="number"
-            {...register('reading_time', { valueAsNumber: true })}
-            className="w-full p-2 border rounded-md dark:bg-gray-800 dark:border-gray-700"
-          />
-        </div>
-      </div>
+            {/* Metadata Card */}
+            <div className="admin-card p-6 space-y-6">
+               <h3 className="text-lg font-medium text-white border-b border-slate-800 pb-4 mb-4">Metadata</h3>
 
-      <div className="flex items-center space-x-2">
-        <input
-          type="checkbox"
-          {...register('published')}
-          id="published"
-          className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
-        />
-        <label htmlFor="published" className="text-sm font-medium">Publish Post</label>
-      </div>
+               <div className="space-y-2">
+                  <label className="admin-label">Category</label>
+                  <input
+                    {...register('category')}
+                    className="admin-input"
+                    placeholder="e.g. Technology"
+                  />
+               </div>
 
-      <div className="flex justify-end space-x-4">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="px-4 py-2 border rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-        >
-          {isSubmitting ? 'Saving...' : (post ? 'Update Post' : 'Create Post')}
-        </button>
+               <div className="space-y-2">
+                  <label className="admin-label">Tags</label>
+                  <input
+                    {...register('tags')}
+                    className="admin-input"
+                    placeholder="react, nextjs, webdev"
+                  />
+                  <p className="text-xs text-slate-500">Separate tags with commas</p>
+               </div>
+            </div>
+
+            {/* Cover Image Card */}
+            <div className="admin-card p-6 space-y-4">
+               <h3 className="text-lg font-medium text-white border-b border-slate-800 pb-4 mb-4">Cover Image</h3>
+               <div className="space-y-2">
+                  <ImageUploader
+                    defaultImage={post?.cover_image}
+                    onUpload={(url) => setValue('cover_image', url)}
+                  />
+                  <input type="hidden" {...register('cover_image')} />
+               </div>
+            </div>
+         </div>
       </div>
     </form>
   );

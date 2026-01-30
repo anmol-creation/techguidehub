@@ -63,57 +63,77 @@ export default function ImageUploader({ onUpload, defaultImage }: ImageUploaderP
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center space-x-4">
-        <label className="block w-full cursor-pointer">
-          <div className={`relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${error ? 'border-red-300 bg-red-50' : 'border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900'}`}>
-            {image ? (
-              <>
-                <img src={image} alt="Preview" className="absolute inset-0 w-full h-full object-contain p-2" />
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    clearImage();
-                  }}
-                  className="absolute top-2 right-2 p-1 bg-red-100 text-red-600 rounded-full hover:bg-red-200"
-                >
-                  <X size={16} />
-                </button>
-              </>
-            ) : (
-              <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                <Upload className="w-8 h-8 mb-3 text-gray-400" />
-                <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                  <span className="font-semibold">Click to upload</span> or drag and drop
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, GIF (MAX. 5MB)</p>
+      <div className="group relative">
+        <label
+          className={`
+            relative flex flex-col items-center justify-center w-full h-48
+            border-2 border-dashed rounded-xl cursor-pointer transition-all duration-200
+            ${error
+              ? 'border-red-500/50 bg-red-500/5 hover:bg-red-500/10'
+              : 'border-slate-700 bg-slate-900/50 hover:bg-slate-800 hover:border-blue-500/50'
+            }
+          `}
+        >
+          {image ? (
+            <>
+              <img
+                src={image}
+                alt="Preview"
+                className="absolute inset-0 w-full h-full object-contain p-2 rounded-xl"
+              />
+              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center rounded-xl">
+                 <p className="text-white text-sm font-medium">Click to change</p>
               </div>
-            )}
-            <input
-              type="file"
-              className="hidden"
-              onChange={handleFileChange}
-              accept="image/*"
-              disabled={isUploading}
-            />
-          </div>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  clearImage();
+                }}
+                className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors shadow-lg z-10"
+              >
+                <X size={14} />
+              </button>
+            </>
+          ) : (
+            <div className="flex flex-col items-center justify-center pt-5 pb-6 text-center">
+              <div className="p-3 bg-slate-800 rounded-full mb-3 group-hover:scale-110 transition-transform duration-200">
+                <Upload className="w-6 h-6 text-blue-400" />
+              </div>
+              <p className="mb-1 text-sm text-slate-300">
+                <span className="font-semibold text-blue-400">Click to upload</span> or drag and drop
+              </p>
+              <p className="text-xs text-slate-500">PNG, JPG, GIF up to 5MB</p>
+            </div>
+          )}
+          <input
+            type="file"
+            className="hidden"
+            onChange={handleFileChange}
+            accept="image/*"
+            disabled={isUploading}
+          />
         </label>
       </div>
 
       {isUploading && (
-        <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-          <div className="bg-blue-600 h-2.5 rounded-full animate-pulse w-full"></div>
+        <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-500 to-purple-500 h-1.5 rounded-full animate-progress w-full origin-left"></div>
         </div>
       )}
 
       {error && (
-        <p className="text-sm text-red-500">{error}</p>
+        <p className="text-sm text-red-400 flex items-center gap-2">
+           <span className="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+           {error}
+        </p>
       )}
 
       {/* Fallback URL input */}
-      <div className="relative">
+      <div className="relative group">
          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-           <ImageIcon className="h-5 w-5 text-gray-400" />
+           <ImageIcon className="h-4 w-4 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
          </div>
          <input
             type="text"
@@ -122,8 +142,8 @@ export default function ImageUploader({ onUpload, defaultImage }: ImageUploaderP
               setImage(e.target.value);
               onUpload(e.target.value);
             }}
-            className="pl-10 block w-full shadow-sm sm:text-sm border-gray-300 dark:border-gray-700 dark:bg-gray-800 rounded-md p-2 border"
-            placeholder="Or enter image URL directly"
+            className="admin-input pl-10 text-xs"
+            placeholder="Or enter image URL directly..."
          />
       </div>
     </div>
