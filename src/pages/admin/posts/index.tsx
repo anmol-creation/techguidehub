@@ -1,72 +1,45 @@
 import { getAllPostsAdmin, Post } from '@/lib/supabase';
 import Link from 'next/link';
-import { Plus, Calendar, FileText } from 'lucide-react';
 
 export default function PostsPage({ posts }: { posts: Post[] }) {
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-           <h1 className="text-3xl font-bold text-white tracking-tight">All Posts</h1>
-           <p className="text-slate-400 mt-1">Manage your blog content</p>
-        </div>
+    <div>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Posts</h1>
         <Link href="/admin/posts/new">
-          <a className="btn-primary flex items-center gap-2">
-             <Plus size={18} />
-             New Post
-          </a>
+          <a className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">New Post</a>
         </Link>
       </div>
 
-      <div className="admin-card overflow-hidden">
-         <div className="divide-y divide-slate-800">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+         <div className="divide-y divide-gray-200 dark:divide-gray-700">
           {posts.map((post) => (
-            <div key={post.id} className="px-6 py-4 flex items-center justify-between hover:bg-slate-800/50 transition-colors group">
-              <div className="flex-1 min-w-0 pr-4">
+            <div key={post.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700">
+              <div>
                 <Link href={`/admin/posts/${post.id}/edit`}>
-                  <a className="text-lg font-medium text-slate-200 hover:text-blue-400 transition-colors block mb-1">{post.title}</a>
+                  <a className="font-medium hover:text-blue-600">{post.title}</a>
                 </Link>
-                <div className="flex items-center text-sm text-slate-500 gap-3">
-                   <div className="flex items-center">
-                      <Calendar size={14} className="mr-1.5" />
-                      {new Date(post.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
-                   </div>
-                   {post.category && (
-                      <div className="flex items-center">
-                         <span className="w-1 h-1 rounded-full bg-slate-600 mr-3"></span>
-                         {post.category}
-                      </div>
-                   )}
+                <div className="text-sm text-gray-500">
+                  {new Date(post.created_at).toLocaleDateString()}
+                  {post.category && <span className="ml-2">• {post.category}</span>}
                 </div>
               </div>
               <div className="flex items-center space-x-4">
-                 <span className={`px-2.5 py-1 text-xs font-medium rounded-full border ${
+                 <span className={`px-2 py-1 text-xs rounded-full ${
                     post.published
-                      ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                      : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                 }`}>
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                      : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                  }`}>
                     {post.published ? 'Published' : 'Draft'}
                  </span>
                  <Link href={`/admin/posts/${post.id}/edit`}>
-                    <a className="px-3 py-1.5 text-sm font-medium text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors border border-slate-700">Edit</a>
+                    <a className="text-sm text-blue-600 hover:text-blue-800">Edit</a>
                  </Link>
               </div>
             </div>
           ))}
           {posts.length === 0 && (
-            <div className="p-12 text-center">
-               <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-800 mb-4">
-                  <FileText className="text-slate-500" size={32} />
-               </div>
-               <h3 className="text-lg font-medium text-slate-300">No posts yet</h3>
-               <p className="text-slate-500 mt-1 mb-6">Get started by creating your first post.</p>
-               <Link href="/admin/posts/new">
-                  <a className="btn-primary inline-flex items-center gap-2">
-                     <Plus size={18} />
-                     Create Post
-                  </a>
-               </Link>
-            </div>
+            <div className="p-8 text-center text-gray-500">No posts found.</div>
           )}
         </div>
       </div>
