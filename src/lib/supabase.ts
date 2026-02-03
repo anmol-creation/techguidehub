@@ -13,6 +13,7 @@ export interface Post {
   category?: string;
   tags?: string[];
   reading_time?: number;
+  view_count?: number;
   created_at: string;
   updated_at: string;
 }
@@ -50,6 +51,19 @@ export async function getPublishedPosts() {
     .select('*')
     .eq('published', true)
     .order('published_at', { ascending: false });
+
+  if (error) throw error;
+  return data as Post[];
+}
+
+export async function getAllPostsByViews() {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your-project')) {
+    return [];
+  }
+  const { data, error } = await supabaseAdmin
+    .from('posts')
+    .select('*')
+    .order('view_count', { ascending: false });
 
   if (error) throw error;
   return data as Post[];
