@@ -1,12 +1,22 @@
-import { getPostBySlug, getPublishedPosts, Post } from '@/lib/supabase';
+import { getPostBySlug, getPublishedPosts, Post, supabase } from '@/lib/supabase';
 import PostContent from '@/components/blog/PostContent';
 import Head from 'next/head';
+import { useEffect } from 'react';
 
 interface PostPageProps {
   post: Post;
 }
 
 export default function PostPage({ post }: PostPageProps) {
+  useEffect(() => {
+    if (post?.id) {
+      const incrementView = async () => {
+        await supabase.rpc('increment_view_count', { post_id: post.id });
+      };
+      incrementView();
+    }
+  }, [post?.id]);
+
   if (!post) return <div>Not Found</div>;
 
   return (

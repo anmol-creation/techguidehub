@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { LayoutDashboard, FileText, Settings, LogOut, ExternalLink, Menu, X } from 'lucide-react';
+import { LayoutDashboard, FileText, Settings, LogOut, ExternalLink, Menu, X, BarChart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
@@ -11,6 +11,7 @@ export default function Sidebar() {
 
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+    { name: 'Insights', href: '/admin/insights', icon: BarChart },
     { name: 'Posts', href: '/admin/posts', icon: FileText },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
