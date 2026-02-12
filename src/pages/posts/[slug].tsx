@@ -11,7 +11,15 @@ export default function PostPage({ post }: PostPageProps) {
   useEffect(() => {
     if (post?.id) {
       const incrementView = async () => {
-        await supabase.rpc('increment_view_count', { post_id: post.id });
+        try {
+          // Check if supabase is configured correctly before attempting RPC
+          // Although the client won't crash now, the request would fail
+          if (process.env.NEXT_PUBLIC_SUPABASE_URL && !process.env.NEXT_PUBLIC_SUPABASE_URL.includes('your-project')) {
+             await supabase.rpc('increment_view_count', { post_id: post.id });
+          }
+        } catch (error) {
+          console.error('Failed to increment view count:', error);
+        }
       };
       incrementView();
     }
