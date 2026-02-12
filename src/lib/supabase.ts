@@ -55,6 +55,7 @@ export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
 
 export async function getPublishedPosts() {
   if (!isSupabaseConfigured) {
+    console.warn('Supabase not configured, returning empty posts list.');
     return [];
   }
   const { data, error } = await supabase
@@ -63,7 +64,10 @@ export async function getPublishedPosts() {
     .eq('published', true)
     .order('published_at', { ascending: false });
 
-  if (error) throw error;
+  if (error) {
+    console.error('Error fetching published posts:', error);
+    throw error;
+  }
   return data as Post[];
 }
 
@@ -71,40 +75,106 @@ export async function getAllPostsByViews() {
   if (!isSupabaseConfigured) {
     return [];
   }
-  const { data, error } = await supabaseAdmin
-    .from('posts')
-    .select('*, comments(count)') // Include comments count
-    .order('view_count', { ascending: false });
+  // Try to fetch with comments count, fallback if relationship fails
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('posts')
+      .select('*, comments(count)') // Include comments count
+      .order('view_count', { ascending: false });
 
-  if (error) throw error;
-  // Map comments count correctly if needed by consumer, but for now just pass as is
-  return data as Post[];
+    if (error) throw error;
+    return data as Post[];
+  } catch (err) {
+    console.error('Error fetching posts by views (likely comments relationship):', err);
+    // Fallback query without comments count
+     const { data, error } = await supabaseAdmin
+      .from('posts')
+      .select('*')
+      .order('view_count', { ascending: false });
+
+    if (error) throw error;
+    return data as Post[];
+  }
 }
 
 export async function getPostBySlug(slug: string) {
   if (!isSupabaseConfigured) {
+    console.warn('Supabase not configured, returning null for slug:', slug);
     return null;
   }
-  const { data, error } = await supabase
-    .from('posts')
-    .select('*, comments(*)')
-    .eq('slug', slug)
-    .eq('published', true)
-    .single();
 
-  if (error) return null;
-  return data as Post;
+  try {
+    // Attempt with comments
+    const { data, error } = await supabase
+      .from('posts')
+      .select('*, comments(*)')
+      .eq('slug', slug)
+      .eq('published', true)
+      .single();
+
+    if (error) {
+       // If strict single row requirement fails, or any other error
+       if (error.code !== 'PGRST116') { // PGRST116 is "The result contains 0 rows"
+          console.error(`Error fetching post by slug "${slug}" with comments:`, error);
+       }
+       throw error;
+    }
+    return data as Post;
+  } catch (err: any) {
+    // If the error was specifically about the comments relationship (e.g. missing FK), try without it
+    // Or if it was just "not found", we should return null.
+
+    // PGRST116: JSON object requested, multiple (or no) rows returned
+    if (err.code === 'PGRST116') {
+        return null;
+    }
+
+    // Try fallback without comments if it wasn't a "not found" error
+    try {
+        console.warn(`Retrying fetch for slug "${slug}" without comments relationship...`);
+        const { data, error } = await supabase
+          .from('posts')
+          .select('*')
+          .eq('slug', slug)
+          .eq('published', true)
+          .single();
+
+        if (error) {
+           if (error.code !== 'PGRST116') {
+              console.error(`Error fetching post by slug "${slug}" (fallback):`, error);
+           }
+           return null;
+        }
+        return data as Post;
+    } catch (fallbackErr) {
+        console.error('Final failure fetching post by slug:', fallbackErr);
+        return null;
+    }
+  }
 }
 
 export async function getAllPostsAdmin() {
   if (!isSupabaseConfigured) {
     return [];
   }
-  const { data, error } = await supabaseAdmin
-    .from('posts')
-    .select('*, comments(count)')
-    .order('created_at', { ascending: false });
 
-  if (error) throw error;
-  return data as Post[];
+  try {
+    const { data, error } = await supabaseAdmin
+        .from('posts')
+        .select('*, comments(count)')
+        .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data as Post[];
+  } catch (err) {
+      console.error('Error fetching admin posts (likely comments relationship):', err);
+      // Fallback
+      const { data, error } = await supabaseAdmin
+        .from('posts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as Post[];
+  }
 }

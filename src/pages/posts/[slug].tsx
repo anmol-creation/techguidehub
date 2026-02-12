@@ -25,7 +25,7 @@ export default function PostPage({ post }: PostPageProps) {
     }
   }, [post?.id]);
 
-  if (!post) return <div>Not Found</div>;
+  if (!post) return <div className="text-center py-20 text-gray-500">Post Not Found</div>;
 
   return (
     <>
@@ -40,25 +40,38 @@ export default function PostPage({ post }: PostPageProps) {
 }
 
 export async function getStaticPaths() {
-  const posts = await getPublishedPosts();
-  const paths = posts.map((post) => ({
-    params: { slug: post.slug },
-  }));
+  try {
+    const posts = await getPublishedPosts();
+    const paths = posts.map((post) => ({
+      params: { slug: post.slug },
+    }));
 
-  return { paths, fallback: 'blocking' };
+    return { paths, fallback: 'blocking' };
+  } catch (error) {
+    console.error('Error in getStaticPaths:', error);
+    return { paths: [], fallback: 'blocking' };
+  }
 }
 
 export async function getStaticProps({ params }: { params: { slug: string } }) {
-  const post = await getPostBySlug(params.slug);
+  try {
+    const post = await getPostBySlug(params.slug);
 
-  if (!post) {
+    if (!post) {
+      console.warn(`Post not found for slug: ${params.slug}`);
+      return {
+        notFound: true,
+      };
+    }
+
+    return {
+      props: { post },
+      revalidate: 3600,
+    };
+  } catch (error) {
+    console.error(`Error in getStaticProps for slug ${params.slug}:`, error);
     return {
       notFound: true,
     };
   }
-
-  return {
-    props: { post },
-    revalidate: 3600,
-  };
 }
