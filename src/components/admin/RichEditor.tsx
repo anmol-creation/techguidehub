@@ -6,8 +6,8 @@ import Image from '@tiptap/extension-image';
 import Link from '@tiptap/extension-link';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { common, createLowlight } from 'lowlight';
-import { Bold, Italic, List, ListOrdered, Quote, Code, Image as ImageIcon, Link as LinkIcon, Heading1, Heading2, Heading3, Undo, Redo } from 'lucide-react';
-import { useCallback } from 'react';
+import { Bold, Italic, List, ListOrdered, Quote, Code, Image as ImageIcon, Link as LinkIcon, Heading1, Heading2, Heading3, Undo, Redo, FileCode, Eye } from 'lucide-react';
+import { useCallback, useState, useRef, useEffect } from 'react';
 
 // Setup lowlight
 const lowlight = createLowlight(common);
@@ -34,6 +34,13 @@ const MenuButton = ({ onClick, isActive = false, children, title, disabled }: an
 );
 
 export default function RichEditor({ content, onChange }: RichEditorProps) {
+  const [isHtmlMode, setIsHtmlMode] = useState(false);
+  const isHtmlModeRef = useRef(isHtmlMode);
+
+  useEffect(() => {
+    isHtmlModeRef.current = isHtmlMode;
+  }, [isHtmlMode]);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -54,7 +61,9 @@ export default function RichEditor({ content, onChange }: RichEditorProps) {
       },
     },
     onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
+      if (!isHtmlModeRef.current) {
+        onChange(editor.getHTML());
+      }
     },
   });
 
@@ -84,6 +93,16 @@ export default function RichEditor({ content, onChange }: RichEditorProps) {
     editor?.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
   }, [editor]);
 
+  const toggleHtmlMode = () => {
+    if (isHtmlMode) {
+      // Switching from HTML to Visual
+      if (editor) {
+        editor.commands.setContent(content);
+      }
+    }
+    setIsHtmlMode(!isHtmlMode);
+  };
+
   if (!editor) {
     return null;
   }
@@ -92,111 +111,136 @@ export default function RichEditor({ content, onChange }: RichEditorProps) {
     <div className="flex flex-col h-full bg-slate-900/30">
       <div className="flex flex-wrap items-center gap-1 p-2 border-b border-slate-800 bg-slate-900/50 sticky top-0 z-10 backdrop-blur-sm">
 
-        <div className="flex items-center gap-1 mr-2">
-           <MenuButton
-            onClick={() => editor.chain().focus().undo().run()}
-            disabled={!editor.can().undo()}
-            title="Undo"
-          >
-            <Undo size={16} />
-          </MenuButton>
-          <MenuButton
-            onClick={() => editor.chain().focus().redo().run()}
-            disabled={!editor.can().redo()}
-            title="Redo"
-          >
-            <Redo size={16} />
-          </MenuButton>
-        </div>
+        {!isHtmlMode && (
+          <>
+            <div className="flex items-center gap-1 mr-2">
+               <MenuButton
+                onClick={() => editor.chain().focus().undo().run()}
+                disabled={!editor.can().undo()}
+                title="Undo"
+              >
+                <Undo size={16} />
+              </MenuButton>
+              <MenuButton
+                onClick={() => editor.chain().focus().redo().run()}
+                disabled={!editor.can().redo()}
+                title="Redo"
+              >
+                <Redo size={16} />
+              </MenuButton>
+            </div>
 
-        <div className="w-px h-5 bg-slate-800 mx-1 self-center" />
+            <div className="w-px h-5 bg-slate-800 mx-1 self-center" />
 
-        <div className="flex items-center gap-1">
-            <MenuButton
-              onClick={() => editor.chain().focus().toggleBold().run()}
-              isActive={editor.isActive('bold')}
-              title="Bold"
+            <div className="flex items-center gap-1">
+                <MenuButton
+                  onClick={() => editor.chain().focus().toggleBold().run()}
+                  isActive={editor.isActive('bold')}
+                  title="Bold"
+                >
+                  <Bold size={16} />
+                </MenuButton>
+                <MenuButton
+                  onClick={() => editor.chain().focus().toggleItalic().run()}
+                  isActive={editor.isActive('italic')}
+                  title="Italic"
+                >
+                  <Italic size={16} />
+                </MenuButton>
+            </div>
+
+            <div className="w-px h-5 bg-slate-800 mx-1 self-center" />
+
+            <div className="flex items-center gap-1">
+                <MenuButton
+                  onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+                  isActive={editor.isActive('heading', { level: 2 })}
+                  title="Heading 2"
+                >
+                  <Heading2 size={16} />
+                </MenuButton>
+                <MenuButton
+                  onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+                  isActive={editor.isActive('heading', { level: 3 })}
+                  title="Heading 3"
+                >
+                  <Heading3 size={16} />
+                </MenuButton>
+            </div>
+
+            <div className="w-px h-5 bg-slate-800 mx-1 self-center" />
+
+            <div className="flex items-center gap-1">
+                <MenuButton
+                  onClick={() => editor.chain().focus().toggleBulletList().run()}
+                  isActive={editor.isActive('bulletList')}
+                  title="Bullet List"
+                >
+                  <List size={16} />
+                </MenuButton>
+                <MenuButton
+                  onClick={() => editor.chain().focus().toggleOrderedList().run()}
+                  isActive={editor.isActive('orderedList')}
+                  title="Ordered List"
+                >
+                  <ListOrdered size={16} />
+                </MenuButton>
+            </div>
+
+            <div className="w-px h-5 bg-slate-800 mx-1 self-center" />
+
+            <div className="flex items-center gap-1">
+                <MenuButton
+                  onClick={() => editor.chain().focus().toggleBlockquote().run()}
+                  isActive={editor.isActive('blockquote')}
+                  title="Blockquote"
+                >
+                  <Quote size={16} />
+                </MenuButton>
+                <MenuButton
+                  onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+                  isActive={editor.isActive('codeBlock')}
+                  title="Code Block"
+                >
+                  <Code size={16} />
+                </MenuButton>
+            </div>
+
+            <div className="w-px h-5 bg-slate-800 mx-1 self-center" />
+
+            <div className="flex items-center gap-1">
+                <MenuButton onClick={setLink} isActive={editor.isActive('link')} title="Link">
+                  <LinkIcon size={16} />
+                </MenuButton>
+                <MenuButton onClick={addImage} title="Image">
+                  <ImageIcon size={16} />
+                </MenuButton>
+            </div>
+             <div className="w-px h-5 bg-slate-800 mx-1 self-center" />
+          </>
+        )}
+
+        <div className="flex items-center gap-1 ml-auto">
+             <MenuButton
+              onClick={toggleHtmlMode}
+              isActive={isHtmlMode}
+              title={isHtmlMode ? "Switch to Visual Editor" : "Switch to HTML Editor"}
             >
-              <Bold size={16} />
-            </MenuButton>
-            <MenuButton
-              onClick={() => editor.chain().focus().toggleItalic().run()}
-              isActive={editor.isActive('italic')}
-              title="Italic"
-            >
-              <Italic size={16} />
-            </MenuButton>
-        </div>
-
-        <div className="w-px h-5 bg-slate-800 mx-1 self-center" />
-
-        <div className="flex items-center gap-1">
-            <MenuButton
-              onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-              isActive={editor.isActive('heading', { level: 2 })}
-              title="Heading 2"
-            >
-              <Heading2 size={16} />
-            </MenuButton>
-            <MenuButton
-              onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-              isActive={editor.isActive('heading', { level: 3 })}
-              title="Heading 3"
-            >
-              <Heading3 size={16} />
-            </MenuButton>
-        </div>
-
-        <div className="w-px h-5 bg-slate-800 mx-1 self-center" />
-
-        <div className="flex items-center gap-1">
-            <MenuButton
-              onClick={() => editor.chain().focus().toggleBulletList().run()}
-              isActive={editor.isActive('bulletList')}
-              title="Bullet List"
-            >
-              <List size={16} />
-            </MenuButton>
-            <MenuButton
-              onClick={() => editor.chain().focus().toggleOrderedList().run()}
-              isActive={editor.isActive('orderedList')}
-              title="Ordered List"
-            >
-              <ListOrdered size={16} />
-            </MenuButton>
-        </div>
-
-        <div className="w-px h-5 bg-slate-800 mx-1 self-center" />
-
-        <div className="flex items-center gap-1">
-            <MenuButton
-              onClick={() => editor.chain().focus().toggleBlockquote().run()}
-              isActive={editor.isActive('blockquote')}
-              title="Blockquote"
-            >
-              <Quote size={16} />
-            </MenuButton>
-            <MenuButton
-              onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-              isActive={editor.isActive('codeBlock')}
-              title="Code Block"
-            >
-              <Code size={16} />
-            </MenuButton>
-        </div>
-
-        <div className="w-px h-5 bg-slate-800 mx-1 self-center" />
-
-        <div className="flex items-center gap-1">
-            <MenuButton onClick={setLink} isActive={editor.isActive('link')} title="Link">
-              <LinkIcon size={16} />
-            </MenuButton>
-            <MenuButton onClick={addImage} title="Image">
-              <ImageIcon size={16} />
+              {isHtmlMode ? <Eye size={16} /> : <FileCode size={16} />}
             </MenuButton>
         </div>
       </div>
-      <EditorContent editor={editor} />
+
+      {isHtmlMode ? (
+        <textarea
+          value={content}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full h-full min-h-[400px] p-6 bg-transparent text-slate-300 font-mono text-sm focus:outline-none resize-none leading-relaxed"
+          placeholder="Enter HTML content..."
+        />
+      ) : (
+        <EditorContent editor={editor} />
+      )}
     </div>
   );
 }
